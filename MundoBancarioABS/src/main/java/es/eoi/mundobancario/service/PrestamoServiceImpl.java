@@ -1,22 +1,25 @@
 package es.eoi.mundobancario.service;
 
+
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
+
 import java.util.List;
 
-import javax.transaction.Transactional;
+
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import es.eoi.mundobancario.entity.Amortizacion;
 import es.eoi.mundobancario.entity.Cuenta;
 import es.eoi.mundobancario.entity.Movimiento;
 import es.eoi.mundobancario.entity.Prestamo;
 import es.eoi.mundobancario.enums.MovimientosEnum;
-import es.eoi.mundobancario.repository.AmortizacionRepository;
+
 import es.eoi.mundobancario.repository.CuentasRepository;
-import es.eoi.mundobancario.repository.MovimientoRepository;
+
 import es.eoi.mundobancario.repository.PrestamoRepository;
 
 @Service
@@ -28,79 +31,81 @@ public class PrestamoServiceImpl implements PrestamoService{
     @Autowired
     private PrestamoRepository prestamoRepository;
 
-    @Autowired
-    private MovimientoRepository movimientoRepository;
+    
+    @Override
+    @Transactional
+    public Prestamo solicitarPrestamo(Integer num_cuenta, Double importe, Integer plazos) {
+        Cuenta cuenta = cuentaRepository.findById(num_cuenta).orElseThrow(() -> new IllegalArgumentException("Cuenta no encontrada"));
 
-    @Autowired
-    private AmortizacionRepository amortizacionRepository;
+        if (prestamoRepository.existsByCuentaAndAmortizacionIsNull(cuenta)) {
+            throw new IllegalArgumentException("Ya hay un préstamo en curso");
+        }
 
-	/*
-	 * @Override
-	 * 
-	 * @Transactional public void solicitarPrestamo(Integer num_cuenta, Double
-	 * importe, Double plazos) { // Miramos si hay un prestamo actual if
-	 * (prestamoRepository.existsByCuentaIdAndAmortizaciones_PagadaFalse(num_cuenta)
-	 * ) { throw new
-	 * IllegalStateException("No se puede solicitar un nuevo préstamo hasta que el actual sea amortizado."
-	 * ); }
-	 * 
-	 * // Buscamos la cuenta Cuenta cuenta =
-	 * cuentaRepository.findById(num_cuenta).orElseThrow(() -> new
-	 * IllegalArgumentException("Cuenta no encontrada"));
-	 * 
-	 * // Creamos y guardamos el prestamos Prestamo prestamo = new Prestamo();
-	 * prestamo.setCuenta(cuenta); prestamo.setImporte(importe);
-	 * prestamo.setPlazos(plazos); prestamo.setFecha(LocalDateTime.now());
-	 * prestamoRepository.save(prestamo);
-	 * 
-	 * // Actualizamos el saldo de la cuenta cuenta.setSaldo(cuenta.getSaldo() +
-	 * importe); cuentaRepository.save(cuenta);
-	 * 
-	 * // Creamos y guardamos el movimiento Movimiento movimiento = new
-	 * Movimiento(); movimiento.setCuenta(cuenta);
-	 * movimiento.setFecha(LocalDateTime.now()); movimiento.setImporte(importe);
-	 * movimiento.setTipo(MovimientosEnum.PRESTAMO);
-	 * movimientoRepository.save(movimiento);
-	 * 
-	 * // Creamos las amortizaciones double importePorPlazo = importe / plazos;
-	 * List<Amortizacion> amortizaciones = new ArrayList<>(); for (int i = 1; i <=
-	 * plazos; i++) { Amortizacion amortizacion = new Amortizacion();
-	 * amortizacion.setPrestamo(prestamo);
-	 * amortizacion.setFecha(LocalDateTime.now().plusMonths(i));
-	 * amortizacion.setImporte(importePorPlazo); amortizacion.setPagada(false);
-	 * amortizaciones.add(amortizacion); }
-	 * amortizacionRepository.saveAll(amortizaciones); }
-	 * 
-	 * @Override
-	 * 
-	 * @Transactional public void revisarAmortizaciones() { List<Amortizacion>
-	 * amortizaciones =
-	 * amortizacionRepository.findByFechaAndPagadaFalse(LocalDateTime.now().withHour
-	 * (0).withMinute(0).withSecond(0).withNano(0)); for (Amortizacion amortizacion
-	 * : amortizaciones) { Cuenta cuenta = amortizacion.getPrestamo().getCuenta();
-	 * 
-	 * // Creamos el movimientos de la amortizacion Movimiento
-	 * amortizacionMovimiento = new Movimiento();
-	 * amortizacionMovimiento.setCuenta(cuenta);
-	 * amortizacionMovimiento.setFecha(LocalDateTime.now());
-	 * amortizacionMovimiento.setImporte(amortizacion.getImporte());
-	 * amortizacionMovimiento.setTipo(MovimientosEnum.AMORTIZACIÓN);
-	 * movimientoRepository.save(amortizacionMovimiento);
-	 * 
-	 * // Actualizar el saldo actual cuenta.setSaldo(cuenta.getSaldo() -
-	 * amortizacion.getImporte());
-	 * 
-	 * // Crear el interes del movimiento double interes = amortizacion.getImporte()
-	 * 0.02; Movimiento interesMovimiento = new Movimiento();
-	 * interesMovimiento.setCuenta(cuenta);
-	 * interesMovimiento.setFecha(LocalDateTime.now());
-	 * interesMovimiento.setImporte(interes);
-	 * interesMovimiento.setTipo(MovimientosEnum.INTERES);
-	 * movimientoRepository.save(interesMovimiento);
-	 * 
-	 * 
-	 * } }
-	 */
+        Prestamo prestamo = new Prestamo();
+        prestamo.setCuenta(cuenta);
+        prestamo.setImporte(importe);
+        prestamo.setPlazos(plazos);
+        prestamo.setFecha(LocalDateTime.now());
+        prestamo.setDescripcion("Préstamo solicitado");
 
+        cuenta.setSaldo(cuenta.getSaldo() + importe);
+
+        for (int i = 1; i <= plazos; i++) {
+            Amortizacion amortizacion = new Amortizacion();
+            amortizacion.setImporte(importe / plazos);
+            amortizacion.setFecha(LocalDate.now().plusMonths(i));
+            amortizacion.setPrestamo(prestamo);
+            prestamo.getAmortizacion().add(amortizacion);
+        }
+
+        Movimiento movimiento = new Movimiento();
+        movimiento.setCuenta(cuenta);
+        movimiento.setFecha(LocalDateTime.now());
+        movimiento.setImporte(importe);
+        movimiento.setTipo(MovimientosEnum.PRESTAMO);
+        cuenta.getMovimiento().add(movimiento);
+
+        cuenta.getPrestamo().add(prestamo);
+        cuentaRepository.save(cuenta);
+
+        return prestamo;
+    }
+    
+    @Override
+    public List<Prestamo> obtenerPrestamosPorCuenta(Integer num_cuenta) {
+        Cuenta cuenta = cuentaRepository.findById(num_cuenta).orElseThrow(() -> new IllegalArgumentException("Cuenta no encontrada"));
+        return cuenta.getPrestamo();
+    }
+
+    @Override
+    @Transactional
+    public void revisarAmortizaciones(Integer num_cuenta) {
+        List<Prestamo> prestamos = prestamoRepository.findAll();
+        for (Prestamo prestamo : prestamos) {
+            for (Amortizacion amortizacion : prestamo.getAmortizacion()) {
+                if (amortizacion.getFecha().equals(LocalDate.now())) {
+                    Cuenta cuenta = prestamo.getCuenta();
+                    
+                    Movimiento movAmortizacion = new Movimiento();
+                    movAmortizacion.setCuenta(cuenta);
+                    movAmortizacion.setFecha(LocalDateTime.now());
+                    movAmortizacion.setImporte(-amortizacion.getImporte());
+                    movAmortizacion.setTipo(MovimientosEnum.AMORTIZACIÓN);
+                    cuenta.getMovimiento().add(movAmortizacion);
+                    cuenta.setSaldo(cuenta.getSaldo() - amortizacion.getImporte());
+
+                    Movimiento movInteres = new Movimiento();
+                    movInteres.setCuenta(cuenta);
+                    movInteres.setFecha(LocalDateTime.now());
+                    movInteres.setImporte(-amortizacion.getImporte() * 0.02);
+                    movInteres.setTipo(MovimientosEnum.INTERES);
+                    cuenta.getMovimiento().add(movInteres);
+                    cuenta.setSaldo(cuenta.getSaldo() - (amortizacion.getImporte() * 0.02));
+
+                    cuentaRepository.save(cuenta);
+                }
+            }
+        }
+    }
 
 }

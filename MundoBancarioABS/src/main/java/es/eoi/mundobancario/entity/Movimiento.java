@@ -68,9 +68,9 @@ public class Movimiento {
 		return fecha;
 	}
 
-	public void setFecha(LocalDateTime fecha) {
-		this.fecha = fecha;
-	}
+	 public void setFecha(LocalDateTime fechaInicio) {
+	        this.fecha = fechaInicio;
+	    }
 
 	public MovimientosEnum getTipo() {
 		return tipo;
@@ -95,6 +95,8 @@ public class Movimiento {
 	public void setCuenta(Cuenta cuenta) {
 		this.cuenta = cuenta;
 	}
+	
+
 
 
 }

@@ -1,7 +1,12 @@
 package es.eoi.mundobancario.service;
 
+import java.io.IOException;
 import java.util.List;
+
+import com.itextpdf.text.DocumentException;
+
 import es.eoi.mundobancario.dto.ClienteDto;
+import es.eoi.mundobancario.dto.ClienteReport;
 import es.eoi.mundobancario.entity.Cliente;
 
 public interface ClienteService {
@@ -21,5 +26,9 @@ public interface ClienteService {
 	public void deleteAll();
 
 	public void delete(Integer id);
+	
+	ClienteReport getClienteReport(Integer id);
+	
+	void generateSimplePdf(Integer id, String filePath) throws IOException, DocumentException;
 
 }

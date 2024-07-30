@@ -77,8 +77,7 @@ public class ClientesController {
 	        return ResponseEntity.ok("Email actualizado correctamente");
 	    }
 	 
-	 //Creacion de cliente nuevo(falta quitar la opcion del onetomany de cuentas y poner la posibilidad de un put de cuenas)
-	 
+	 //Creacion de cliente nuevo
 	@PostMapping
 		public ResponseEntity<String> agregarCliente(@RequestBody Cliente nuevoCliente) {		
 	    clienteService.addCliente(nuevoCliente);

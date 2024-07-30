@@ -1,4 +1,5 @@
 package es.eoi.mundobancario.entity;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import javax.persistence.Column;
@@ -76,6 +77,22 @@ public class Amortizacion {
 
 	public void setPagada(Boolean pagada) {
 		this.pagada = pagada;
+	}
+
+	public LocalDateTime getFechaPlanificada() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public void setFechaPlanificada(LocalDate localDate) {
+		// TODO Auto-generated method stub
+		
+	}
+	
+
+	public void setFecha(LocalDate plusMonths) {
+		// TODO Auto-generated method stub
+		
 	}
 }
 

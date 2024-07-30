@@ -1,7 +1,6 @@
 package es.eoi.mundobancario.entity;
 
 import java.util.List;
-
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -11,13 +10,14 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.Table;
 
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-
 @Entity(name = "Cuentas")
+@Table(name = "Cuentas", schema = "Cuentas")
 @Getter
 @Setter
 @ToString
@@ -27,13 +27,13 @@ public class Cuenta {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)	
 	private Integer num_cuenta;
 
-
 	@Column
 	private String alias;
 	
 	@Column
 	private Double saldo;
 	
+
 	@ManyToOne
     @JoinColumn(name = "cliente_id")
     private Cliente cliente;
@@ -85,12 +85,11 @@ public class Cuenta {
 		this.cliente = cliente;
 	}
 	
-	
-	public Integer getNumCuenta() {
+	public Integer getNum_cuenta() {
 		return num_cuenta;
 	}
 
-	public void setNumCuenta(Integer num_cuenta) {
+	public void setNum_cuenta(Integer num_cuenta) {
 		this.num_cuenta = num_cuenta;
 	}
 

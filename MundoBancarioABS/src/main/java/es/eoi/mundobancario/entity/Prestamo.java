@@ -1,5 +1,6 @@
 package es.eoi.mundobancario.entity;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -39,7 +40,7 @@ public class Prestamo {
 	private Double importe;
 	
 	@Column
-	private Double plazos;
+	private Integer plazos;
 
 	@ManyToOne
 	@JsonIgnore
@@ -81,11 +82,11 @@ public class Prestamo {
 		this.importe = importe;
 	}
 
-	public Double getPlazos() {
+	public Integer getPlazos() {
 		return plazos;
 	}
 
-	public void setPlazos(Double plazos) {
+	public void setPlazos(Integer plazos) {
 		this.plazos = plazos;
 	}
 
@@ -103,5 +104,10 @@ public class Prestamo {
 
 	public void setAmortizacion(List<Amortizacion> amortizacion) {
 		this.amortizacion = amortizacion;
+	}
+
+	public void setFechaSolicitud(LocalDate now) {
+
+		
 	}
 }

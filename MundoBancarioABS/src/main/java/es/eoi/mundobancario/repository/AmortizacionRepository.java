@@ -1,6 +1,5 @@
 package es.eoi.mundobancario.repository;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,5 +10,5 @@ import es.eoi.mundobancario.entity.Amortizacion;
 @Repository
 public interface AmortizacionRepository extends JpaRepository<Amortizacion, Integer>{
 	
-	List<Amortizacion> findByFechaAndPagadaFalse(LocalDateTime fecha);
+	List<Amortizacion> findByPrestamoId(Integer prestamoId);
 }
